@@ -1,9 +1,8 @@
 import google.generativeai as genai
-import os, requests
-from bs4 import BeautifulSoup
+import os
 from langchain_community.document_loaders import WebBaseLoader
 
-url = 'https://www.apple.com/in/macbook-pro/'
+url = 'https://www.amazon.com/A315-24P-R7VH-Display-Quad-Core-Processor-Graphics/dp/B0BS4BP8FB/ref=sr_1_9?keywords=laptop&sr=8-9'
 loader = WebBaseLoader(url)
 data = loader.load()
 
