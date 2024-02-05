@@ -1,24 +1,32 @@
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_community.document_loaders import PyPDFLoader
+from langchain.prompts import PromptTemplate
+from langchain.chains.question_answering import load_qa_chain
 import google.generativeai as genai
-from IPython.display import Markdown
-import textwrap
+from dotenv import load_dotenv
+import os
 
-# Replace with your actual API key
-genai.configure(api_key="AIzaSyDjOG1cat93gpFw4AylJWt9QU6IwnbBzE8")
+load_dotenv()
+genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+model = ChatGoogleGenerativeAI(model="gemini-pro", temperature=0.3)
 
-model = genai.GenerativeModel('gemini-pro')
-paragraph = """"""
+pdf_loader = PyPDFLoader('./Amit_Hirpara_Resume.pdf')
+pages = pdf_loader.load_and_split()
+context = "\n".join(str(p.page_content) for p in pages)
 
-def to_markdown(text):
-  text = text.replace('•', '  *')
-  return Markdown(textwrap.indent(text, '> ', predicate=lambda _: True))
+prompt_template = """Answer the question as precise as possible using the provided context. If the answer is
+                    not contained in the context, say "answer not available in context" \n\n
+                    Context: \n {context}?\n
+                    Question: \n {question} \n
+                    Answer:
+                """
+prompt = PromptTemplate(template=prompt_template, input_variables=["context", "question"])
+
+stuff_chain = load_qa_chain(model, chain_type="stuff", prompt=prompt)
 
 while True:
     question = input("Enter your query: ")
-    prompt = f"""Answer the following question based on the information in this paragraph:
-
-    {paragraph}
-
-    Question: {question}
-    """
-    response = model.generate_content(prompt)
-    print(to_markdown(response.text).data)
+    stuff_answer = stuff_chain(
+        {"input_documents": pages, "question": question}, return_only_outputs=True
+    )
+    print(stuff_answer['output_text'])
