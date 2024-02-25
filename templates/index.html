@@ -23,7 +23,7 @@
 							<button type="submit" id="send" class="input-group-text send_btn"><i class="fas fa-location-arrow"></i></button>
 						</div>
 					</form>
-					<div class="card">
+					<div class="card" id="card">
 						<div class="card-header msg_head">
 							<div class="d-flex bd-highlight">
 								<div class="img_cont">
@@ -52,6 +52,13 @@
         </div>
         
 		<script>
+			var contextData = {{ context | tojson | safe }};
+			console.log(contextData.data);
+
+			if (contextData.data === '') {
+            	document.getElementById('card').classList.add('disabledbutton');
+        	}
+
 			$(document).ready(function() {
 				$("#messageArea").on("submit", function(event) {
 					const date = new Date();
