@@ -1,13 +1,11 @@
-from flask import Flask, render_template, request, session, redirect
+from flask import Flask, render_template, request, redirect
 import google.generativeai as genai
 import os
 from langchain_community.document_loaders import WebBaseLoader
 
 app = Flask(__name__)
-app.secret_key = 'd5fb8c4fa8bd46638dadc4e751e0d68d'
 
 context = {'data':""}
-# url = 'https://arxiv.org/abs/2402.05935'
 
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 model = genai.GenerativeModel('gemini-pro')
