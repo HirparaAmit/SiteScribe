@@ -24,15 +24,14 @@ def link():
     context = {'data':data[0].page_content}
     return redirect("/")
 
-@app.route('/get', methods=['GET','POST'])
+@app.route('/get', methods=['POST'])
 def chat():
-    if request.method == 'POST':
-        global context
-        msg = request.form['msg']
-        prompt = f"""Answer the question as precise as possible using the provided context. This context is scraped from a website, so if user mentions website, he means this given context.\n\n
-                    Context: \n {context['data']}?\n
-                    Question: \n {msg} \n
-                    Answer:
-                """
-        response = model.generate_content(prompt)
-        return response.text
+    global context
+    msg = request.form['msg']
+    prompt = f"""Answer the question as precise as possible using the provided context. This context is scraped from a website, so if user mentions website, he means this given context.\n\n
+                Context: \n {context['data']}?\n
+                Question: \n {msg} \n
+                Answer:
+            """
+    response = model.generate_content(prompt)
+    return response.text
