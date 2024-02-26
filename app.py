@@ -4,7 +4,7 @@ import os, uuid
 from langchain_community.document_loaders import WebBaseLoader
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'd5fb8c4fa8bd46638dadc4e751e0d68d'
+app.config['SECRET_KEY'] = os.getenv("APP_SECRET_KEY")
 
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 model = genai.GenerativeModel('gemini-pro')
@@ -37,7 +37,7 @@ def chat():
     with open(f"./scraped_data/{session.get('session_id')}.txt", 'r', encoding='utf-8') as file:
         context = file.read()
     msg = request.form['msg']
-    prompt = f"""Answer the question as precise as possible using the provided context. This context is scraped from a website, so if user mentions website, he means this given context.\n\n
+    prompt = f"""Answer the question as precise as possible using the provided context.\n\n
                 Context: \n {context}?\n
                 Question: \n {msg} \n
                 Answer:
