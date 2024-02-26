@@ -10,6 +10,9 @@ body,html{
 	margin-top: auto;
 	margin-bottom: auto;
 }
+.input-link{
+	margin-bottom: 2%;
+}
 .card{
 	height: 500px;
 	background-color: rgba(0,0,0,0.4) !important;
