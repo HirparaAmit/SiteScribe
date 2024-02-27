@@ -1,13 +1,29 @@
-from flask import Flask, render_template, request, redirect, session
+from flask import Flask, render_template, request, redirect, session, jsonify
 import google.generativeai as genai
 import os, uuid
+from datetime import datetime
 from langchain_community.document_loaders import WebBaseLoader
+from apscheduler.schedulers.background import BackgroundScheduler
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv("APP_SECRET_KEY")
 
+scheduler = BackgroundScheduler()
+
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 model = genai.GenerativeModel('gemini-pro')
+
+def delete_files():
+    current_time = datetime.now().timestamp()
+    expiration_threshold = 18000
+    for file in os.listdir('./scraped_data'):
+        creation_time = os.path.getctime(f"./scraped_data/{file}")
+        current_time = datetime.now().timestamp()
+        if current_time - creation_time > expiration_threshold:
+            os.remove(f"./scraped_data/{file}")
+
+scheduler.add_job(delete_files, 'interval', minutes=120)
+scheduler.start()
 
 @app.route('/')
 def index():
@@ -34,16 +50,24 @@ def link():
 
 @app.route('/get', methods=['POST'])
 def chat():
-    with open(f"./scraped_data/{session.get('session_id')}.txt", 'r', encoding='utf-8') as file:
-        context = file.read()
-    msg = request.form['msg']
-    prompt = f"""Answer the question as precise as possible using the provided context.\n\n
-                Context: \n {context}?\n
-                Question: \n {msg} \n
-                Answer:
-            """
-    response = model.generate_content(prompt)
-    return response.text
+    if 'session_id' in session:
+        if f"{session.get('session_id')}.txt" in os.listdir('./scraped_data'):
+            with open(f"./scraped_data/{session.get('session_id')}.txt", 'r', encoding='utf-8') as file:
+                context = file.read()
+            msg = request.form['msg']
+            prompt = f"""Answer the question as precise as possible using the provided context.\n\n
+                        Context: \n {context}?\n
+                        Question: \n {msg} \n
+                        Answer:
+                    """
+            response = model.generate_content(prompt)
+            return jsonify({"response": response.text, "type": "success"})
+        else:
+            print("Your session is timed out!")
+            session.clear()
+            return jsonify({"response": "Your session is timed out!", "type": "redirect"})
+    else:
+        return jsonify({"response": "Your session is timed out!", "type": "redirect"})
 
 if __name__=='__main__':
     app.run()
