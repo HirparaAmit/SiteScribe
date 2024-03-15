@@ -55,12 +55,13 @@ def chat():
             with open(f"./scraped_data/{session.get('session_id')}.txt", 'r', encoding='utf-8') as file:
                 context = file.read()
             msg = request.form['msg']
-            prompt = f"""Answer the question as precise as possible using the provided context.\n\n
+            prompt = f"""Answer the question as precise as possible.\n\n
                         Context: \n {context}?\n
                         Question: \n {msg} \n
                         Answer:
                     """
-            response = model.generate_content(prompt)
+            chat = model.start_chat(history=[])
+            response = chat.send_message(prompt)
             return jsonify({"response": response.text, "type": "success"})
         else:
             print("Your session is timed out!")
